@@ -1,21 +1,3 @@
-Berdasarkan gambar dan keterangan Anda, saya paham letak kebingungannya.
-
-Secara matematis, rumus `Estimasi SPM Aktual` sebenarnya **sudah benar**. Rumus menghitung SPM Aktual murni ditentukan oleh ukuran Pulley: `(RPM * Pulley) / (Ratio * Gearbox)`.
-Di riwayat Anda sebelumnya (pada baris Target SPM 7), nilai Est. Aktual menunjukkan **8.141** karena saat menekan *Submit*, sistem membaca ada angka **6.00** di kolom "Pulley Dipasang". Jadi, sistem menghitung hasil berdasarkan pulley 6.00 inch tersebut, bukan berdasarkan Target SPM 7.
-
-Namun, untuk memastikan sistem **jauh lebih responsif** dan **anti-bug** saat data direkam, saya telah memodifikasi kodenya:
-
-1. **Perhitungan Ulang Native:** Tombol Submit sekarang memiliki rumus independen yang menghitung ulang nilai aktual dari nol sebelum memasukkannya ke tabel (tidak lagi sekadar meng-copy teks yang tampil di layar).
-2. **Kolom Deviasi di Riwayat:** Saya menambahkan kolom **"Selisih/Deviasi"** di dalam tabel riwayat. Jadi, jika pulley yang dipasang menghasilkan SPM yang berbeda dari Target, Anda bisa langsung melihat persentase selisihnya di tabel.
-3. **Peningkatan Responsivitas:** Menambahkan sensor `onchange` agar saat Anda menekan tombol panah (atas/bawah) pada input angka, sistem langsung berhitung tanpa jeda.
-
-
-
-*Catatan: Tabel Riwayat berfungsi sebagai "Buku Catatan Log" yang statis. Jadi saat Anda mengubah parameter input di atas, data di dalam tabel memang tidak akan ikut berubah karena ia merekam kejadian saat itu.*
-
-Silakan *Copy-Paste* kode terbaru ini ke GitHub Anda:
-
-```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -317,5 +299,3 @@ Silakan *Copy-Paste* kode terbaru ini ke GitHub Anda:
     </script>
 </body>
 </html>
-
-```
