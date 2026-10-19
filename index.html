@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen p-4 md:p-8">
-    <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8">
+    <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8">
         <h1 class="text-2xl md:text-3xl font-bold text-gray-800 border-b pb-4 mb-6">Kalkulator Diameter Pulley Motor – Sucker Rod Pump</h1>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -15,7 +15,7 @@
             <div class="bg-blue-50 p-6 rounded-lg border border-blue-100">
                 <h2 class="text-xl font-semibold text-blue-800 mb-4">Parameter Input</h2>
                 <div class="space-y-4">
-                    <!-- Tambahan Identitas Sumur -->
+                    <!-- Identitas Sumur -->
                     <div class="grid grid-cols-2 gap-4 border-b border-blue-200 pb-4 mb-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700">No. SRP</label>
@@ -101,6 +101,7 @@
                 <table class="min-w-full divide-y divide-gray-200 bg-white">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal & Waktu</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. SRP</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Well</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target SPM</th>
@@ -118,6 +119,14 @@
     </div>
 
     <script>
+        // Fungsi untuk memformat tanggal dan waktu
+        function getCurrentDateTime() {
+            const now = new Date();
+            const date = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+            const time = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            return `${date} - ${time}`;
+        }
+
         function calculate() {
             const gearRatio = parseFloat(document.getElementById('gearRatio').value) || 0;
             const pulleyGearbox = parseFloat(document.getElementById('pulleyGearbox').value) || 0;
@@ -167,6 +176,9 @@
         }
 
         function submitRecord() {
+            // Ambil Waktu
+            const dateTimeStr = getCurrentDateTime();
+
             // Ambil data identitas
             let noSrp = document.getElementById('noSrp').value.trim().toUpperCase();
             let noWell = document.getElementById('noWell').value.trim().toUpperCase();
@@ -186,6 +198,7 @@
             tr.className = "hover:bg-gray-50 transition duration-150";
             
             tr.innerHTML = `
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${dateTimeStr}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-medium">${noSrp}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${noWell}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${targetSpm}</td>
@@ -201,22 +214,20 @@
             // Tambahkan baris ke dalam tabel (di urutan paling atas)
             tbody.insertBefore(tr, tbody.firstChild);
 
-            // Tampilkan area riwayat (hilangkan class 'hidden')
+            // Tampilkan area riwayat
             document.getElementById('historySection').classList.remove('hidden');
 
-            // Kosongkan input SRP dan Well setelah submit untuk memudahkan input berikutnya
+            // Kosongkan input SRP dan Well setelah submit
             document.getElementById('noSrp').value = "";
             document.getElementById('noWell').value = "";
-            document.getElementById('noSrp').focus(); // arahkan kursor kembali ke input
+            document.getElementById('noSrp').focus();
         }
 
         function deleteRecord(btn) {
-            // Konfirmasi sebelum menghapus
             if(confirm("Apakah Anda yakin ingin menghapus record ini?")) {
                 const row = btn.closest('tr');
                 row.remove();
                 
-                // Sembunyikan tabel jika sudah tidak ada data
                 const tbody = document.getElementById('recordTableBody');
                 if(tbody.children.length === 0) {
                     document.getElementById('historySection').classList.add('hidden');
@@ -224,7 +235,7 @@
             }
         }
 
-        // Jalankan kalkulasi pertama kali saat web dimuat
+        // Jalankan kalkulasi pertama kali
         window.onload = calculate;
     </script>
 </body>
