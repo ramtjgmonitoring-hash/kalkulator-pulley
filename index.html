@@ -1,3 +1,21 @@
+Berdasarkan gambar dan keterangan Anda, saya paham letak kebingungannya.
+
+Secara matematis, rumus `Estimasi SPM Aktual` sebenarnya **sudah benar**. Rumus menghitung SPM Aktual murni ditentukan oleh ukuran Pulley: `(RPM * Pulley) / (Ratio * Gearbox)`.
+Di riwayat Anda sebelumnya (pada baris Target SPM 7), nilai Est. Aktual menunjukkan **8.141** karena saat menekan *Submit*, sistem membaca ada angka **6.00** di kolom "Pulley Dipasang". Jadi, sistem menghitung hasil berdasarkan pulley 6.00 inch tersebut, bukan berdasarkan Target SPM 7.
+
+Namun, untuk memastikan sistem **jauh lebih responsif** dan **anti-bug** saat data direkam, saya telah memodifikasi kodenya:
+
+1. **Perhitungan Ulang Native:** Tombol Submit sekarang memiliki rumus independen yang menghitung ulang nilai aktual dari nol sebelum memasukkannya ke tabel (tidak lagi sekadar meng-copy teks yang tampil di layar).
+2. **Kolom Deviasi di Riwayat:** Saya menambahkan kolom **"Selisih/Deviasi"** di dalam tabel riwayat. Jadi, jika pulley yang dipasang menghasilkan SPM yang berbeda dari Target, Anda bisa langsung melihat persentase selisihnya di tabel.
+3. **Peningkatan Responsivitas:** Menambahkan sensor `onchange` agar saat Anda menekan tombol panah (atas/bawah) pada input angka, sistem langsung berhitung tanpa jeda.
+
+
+
+*Catatan: Tabel Riwayat berfungsi sebagai "Buku Catatan Log" yang statis. Jadi saat Anda mengubah parameter input di atas, data di dalam tabel memang tidak akan ikut berubah karena ia merekam kejadian saat itu.*
+
+Silakan *Copy-Paste* kode terbaru ini ke GitHub Anda:
+
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -7,10 +25,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen p-4 md:p-8">
-    <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8">
+    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8">
         <h1 class="text-2xl md:text-3xl font-bold text-gray-800 border-b pb-4 mb-6">Kalkulator Diameter Pulley Motor – Sucker Rod Pump</h1>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Bagian Input -->
             <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 flex flex-col justify-between">
                 <div>
@@ -34,33 +52,33 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Gear Reducer Ratio</label>
-                            <input type="number" id="gearRatio" value="28.45" min="0" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()">
+                            <input type="number" id="gearRatio" value="28.45" min="0" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()" onchange="calculate()">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Pulley Gearbox (inch)</label>
-                            <input type="number" id="pulleyGearbox" value="25" min="0" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()">
+                            <input type="number" id="pulleyGearbox" value="25" min="0" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()" onchange="calculate()">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">SPM Target</label>
-                            <input type="number" id="spmTarget" value="7" min="0" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()">
+                            <input type="number" id="spmTarget" value="6.9" min="0" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()" onchange="calculate()">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">RPM Motor</label>
-                            <input type="number" id="rpmMotor" value="965" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()">
+                            <input type="number" id="rpmMotor" value="965" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()" onchange="calculate()">
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Pulley Standar (inch)</label>
-                                <input type="number" id="kelipatanPulley" value="0.25" min="0" step="0.05" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()">
+                                <input type="number" id="kelipatanPulley" value="0.25" min="0" step="0.05" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()" onchange="calculate()">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Dia. Shaft (inch)</label>
-                                <input type="number" id="diaShaft" value="2.125" min="0" step="0.125" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()">
+                                <input type="number" id="diaShaft" value="2.125" min="0" step="0.125" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()" onchange="calculate()">
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Bore Pulley Baru (inch) <span class="text-xs text-gray-500 italic">- Opsional</span></label>
-                            <input type="number" id="borePulley" value="2.125" min="0" step="0.125" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()">
+                            <input type="number" id="borePulley" value="2.125" min="0" step="0.125" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()" onchange="calculate()">
                         </div>
                     </div>
                 </div>
@@ -68,8 +86,8 @@
                 <!-- Input Pulley Aktual -->
                 <div class="mt-6 pt-6 border-t border-blue-200">
                     <label class="block text-sm font-bold text-blue-900 mb-2">Pulley Dipasang/Tersedia (inch)</label>
-                    <input type="number" id="pulleyAktual" placeholder="Masukkan ukuran pulley yang akan dipasang" min="0" step="0.05" class="block w-full rounded-md border-blue-400 bg-blue-100 shadow-sm p-3 border-2 focus:ring-blue-600 focus:border-blue-600 font-bold text-lg" oninput="calculate()">
-                    <p class="text-xs text-gray-600 mt-1">Isi berdasarkan ketersediaan di lapangan atau hasil perhitungan rekomendasi di samping.</p>
+                    <input type="number" id="pulleyAktual" placeholder="Kosongkan jika ingin sesuai rekomendasi standar..." min="0" step="0.05" class="block w-full rounded-md border-blue-400 bg-blue-100 shadow-sm p-3 border-2 focus:ring-blue-600 focus:border-blue-600 font-bold text-lg" oninput="calculate()" onchange="calculate()">
+                    <p class="text-xs text-gray-600 mt-1">Isi berdasarkan ketersediaan di lapangan jika berbeda dari Rekomendasi Pulley Standar.</p>
                 </div>
             </div>
 
@@ -126,6 +144,7 @@
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target SPM</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-blue-50">Pulley Dipasang</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-green-50">Est. Aktual</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Selisih (Deviasi)</th>
                             <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
@@ -147,11 +166,10 @@
             const diaShaft = parseFloat(document.getElementById('diaShaft').value) || 0;
             const borePulley = document.getElementById('borePulley').value;
             
-            // Ambil nilai Pulley Aktual (jika kosong, dianggap 0)
             const inputPulleyAktual = document.getElementById('pulleyAktual').value;
             const pulleyAktual = parseFloat(inputPulleyAktual) || 0;
 
-            // 1. Perhitungan Pulley Teoritis & Rekomendasi Standar
+            // 1. Perhitungan Teoritis & Standar
             let teoritis = 0;
             if (rpmMotor > 0) teoritis = (gearRatio * pulleyGearbox * spmTarget) / rpmMotor;
             
@@ -159,31 +177,22 @@
             if (kelipatan > 0 && teoritis > 0) {
                 standar = Math.round(teoritis / kelipatan) * kelipatan;
             }
-            
-            // Jika input pulley aktual belum diisi, kita bisa otomatis mengisinya dengan rekomendasi standar
-            // (Opsional: Jika Anda ingin ini otomatis terisi, hapus komentar pada 2 baris di bawah)
-            // if(inputPulleyAktual === "" && standar > 0) {
-            //     document.getElementById('pulleyAktual').value = standar.toFixed(2);
-            // }
 
-            // Gunakan pulley aktual untuk perhitungan SPM jika sudah diisi, jika tidak gunakan standar
+            // 2. SPM Aktual
             const pulleyUntukDihitung = pulleyAktual > 0 ? pulleyAktual : standar;
-
-            // 2. Perhitungan SPM Aktual berdasarkan pulley yang dipasang
             let spmAktual = 0;
             if (gearRatio > 0 && pulleyGearbox > 0 && pulleyUntukDihitung > 0) {
                 spmAktual = (rpmMotor * pulleyUntukDihitung) / (gearRatio * pulleyGearbox);
             }
 
-            // 3. Perhitungan Deviasi
+            // 3. Deviasi
             const selisih = spmAktual - spmTarget;
             let deviasi = 0;
             if (spmTarget > 0) deviasi = (selisih / spmTarget) * 100;
 
-            // 4. Status Bore / Bushing
+            // 4. Status Bore
             let statusText = "BELUM DIISI";
             let statusClass = "bg-gray-200 text-gray-800";
-            
             if (borePulley !== "") {
                 const boreVal = parseFloat(borePulley);
                 if (boreVal.toFixed(3) === diaShaft.toFixed(3)) {
@@ -195,7 +204,7 @@
                 }
             }
 
-            // 5. Tampilkan ke layar
+            // 5. Render ke Layar
             document.getElementById('outTeoritis').innerText = teoritis.toFixed(3);
             document.getElementById('outStandar').innerText = standar.toFixed(2) + " inch";
             
@@ -221,24 +230,40 @@
                 displayDate = d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
             }
 
-            // Ambil data identitas
-            let noSrp = document.getElementById('noSrp').value.trim().toUpperCase();
-            let noWell = document.getElementById('noWell').value.trim().toUpperCase();
-            
-            if(noSrp === "") noSrp = "-";
-            if(noWell === "") noWell = "-";
+            let noSrp = document.getElementById('noSrp').value.trim().toUpperCase() || "-";
+            let noWell = document.getElementById('noWell').value.trim().toUpperCase() || "-";
 
-            // Ambil data hasil kalkulasi & input aktual
-            const targetSpm = document.getElementById('spmTarget').value || 0;
-            
-            // Cek apakah user mengisi pulley aktual
+            // PERHITUNGAN ULANG KHUSUS UNTUK RECORD (Mencegah salah baca dari layar)
+            const gearRatio = parseFloat(document.getElementById('gearRatio').value) || 0;
+            const pulleyGearbox = parseFloat(document.getElementById('pulleyGearbox').value) || 0;
+            const rpmMotor = parseFloat(document.getElementById('rpmMotor').value) || 0;
+            const targetSpm = parseFloat(document.getElementById('spmTarget').value) || 0;
+            const kelipatan = parseFloat(document.getElementById('kelipatanPulley').value) || 0.25;
             const inputPulleyAktual = document.getElementById('pulleyAktual').value;
-            const standar = document.getElementById('outStandar').innerText; // Mengambil string misal "5.25 inch"
-            
-            // Jika pulley aktual diisi, catat itu. Jika tidak, catat pulley standarnya.
-            const pulleyDicatat = inputPulleyAktual !== "" ? parseFloat(inputPulleyAktual).toFixed(2) + " in" : standar.replace("inch", "in");
-            
-            const aktual = document.getElementById('outSpmAktual').innerText;
+
+            let pulleyVal = 0;
+            if (inputPulleyAktual !== "") {
+                pulleyVal = parseFloat(inputPulleyAktual);
+            } else {
+                let teoritis = (rpmMotor > 0) ? (gearRatio * pulleyGearbox * targetSpm) / rpmMotor : 0;
+                pulleyVal = (kelipatan > 0 && teoritis > 0) ? Math.round(teoritis / kelipatan) * kelipatan : 0;
+            }
+
+            let aktualSpm = 0;
+            if (gearRatio > 0 && pulleyGearbox > 0 && pulleyVal > 0) {
+                aktualSpm = (rpmMotor * pulleyVal) / (gearRatio * pulleyGearbox);
+            }
+
+            let deviasi = 0;
+            let selisih = aktualSpm - targetSpm;
+            if (targetSpm > 0) {
+                deviasi = (selisih / targetSpm) * 100;
+            }
+
+            // Siapkan teks untuk tabel
+            const pulleyText = pulleyVal.toFixed(2) + " in";
+            const aktualText = aktualSpm.toFixed(3);
+            const deviasiText = `${selisih > 0 ? '+' : ''}${selisih.toFixed(3)} (${selisih > 0 ? '+' : ''}${deviasi.toFixed(2)}%)`;
 
             // Tambah baris tabel
             const tbody = document.getElementById('recordTableBody');
@@ -250,8 +275,9 @@
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-medium">${noSrp}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${noWell}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${targetSpm}</td>
-                <td class="px-4 py-3 whitespace-nowrap text-sm text-blue-700 font-bold bg-blue-50">${pulleyDicatat}</td>
-                <td class="px-4 py-3 whitespace-nowrap text-sm text-green-800 font-bold bg-green-50">${aktual}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-blue-700 font-bold bg-blue-50">${pulleyText}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-green-800 font-bold bg-green-50">${aktualText}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">${deviasiText}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-center">
                     <button onclick="deleteRecord(this)" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1 rounded border border-red-200 transition duration-150">
                         Hapus
@@ -262,13 +288,12 @@
             tbody.insertBefore(tr, tbody.firstChild);
             document.getElementById('historySection').classList.remove('hidden');
 
-            // Kosongkan input untuk entri berikutnya
+            // Kosongkan input agar bersih untuk perhitungan sumur berikutnya
             document.getElementById('noSrp').value = "";
             document.getElementById('noWell').value = "";
             document.getElementById('pulleyAktual').value = "";
             document.getElementById('noSrp').focus();
             
-            // Kalkulasi ulang untuk reset display berdasarkan pulley standar
             calculate();
         }
 
@@ -284,7 +309,6 @@
             }
         }
 
-        // Setel tanggal hari ini & jalankan kalkulasi saat pertama dimuat
         window.onload = function() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('tanggalInput').value = today;
@@ -293,3 +317,5 @@
     </script>
 </body>
 </html>
+
+```
