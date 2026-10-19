@@ -1,3 +1,13 @@
+Fitur input tanggal manual dan daftar opsi ukuran pulley yang tersedia sudah saya tambahkan ke dalam kode.
+
+Berikut adalah perubahan yang diterapkan:
+
+1. **Input Tanggal:** Ditambahkan kolom input berjenis `date` di samping No. SRP dan No. Well. Secara otomatis akan terisi dengan tanggal hari ini saat web dibuka, namun bisa Anda ubah sesuai kebutuhan.
+2. **Opsi Pulley Tersedia:** Ditambahkan baris baru di bagian "Hasil Otomatis" yang menampilkan daftar 5 ukuran pulley standar yang tersedia (2 ukuran di bawah dan 2 ukuran di atas hasil standar) berdasarkan kelipatan/katalog yang Anda masukkan.
+
+Silakan ganti kode di GitHub Anda dengan kode terbaru berikut:
+
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -15,8 +25,12 @@
             <div class="bg-blue-50 p-6 rounded-lg border border-blue-100">
                 <h2 class="text-xl font-semibold text-blue-800 mb-4">Parameter Input</h2>
                 <div class="space-y-4">
-                    <!-- Identitas Sumur -->
-                    <div class="grid grid-cols-2 gap-4 border-b border-blue-200 pb-4 mb-4">
+                    <!-- Identitas Sumur & Tanggal -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-blue-200 pb-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Tanggal</label>
+                            <input type="date" id="tanggalInput" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
+                        </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">No. SRP</label>
                             <input type="text" id="noSrp" placeholder="Contoh: SRP-01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500 uppercase">
@@ -74,6 +88,10 @@
                             <span id="outStandar" class="font-bold text-2xl text-blue-600">0.00</span>
                         </div>
                         <div class="flex justify-between items-center border-b border-green-200 pb-2">
+                            <span class="text-gray-700">Daftar Size Pulley Tersedia:</span>
+                            <span id="outOpsiStandar" class="font-medium text-sm text-gray-600 tracking-wider">-</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-green-200 pb-2">
                             <span class="text-gray-700">Estimasi SPM Aktual:</span>
                             <span id="outSpmAktual" class="font-bold text-lg text-gray-900">0.000</span>
                         </div>
@@ -101,7 +119,7 @@
                 <table class="min-w-full divide-y divide-gray-200 bg-white">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal & Waktu</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. SRP</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Well</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target SPM</th>
@@ -119,14 +137,6 @@
     </div>
 
     <script>
-        // Fungsi untuk memformat tanggal dan waktu
-        function getCurrentDateTime() {
-            const now = new Date();
-            const date = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-            const time = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            return `${date} - ${time}`;
-        }
-
         function calculate() {
             const gearRatio = parseFloat(document.getElementById('gearRatio').value) || 0;
             const pulleyGearbox = parseFloat(document.getElementById('pulleyGearbox').value) || 0;
@@ -136,20 +146,41 @@
             const diaShaft = parseFloat(document.getElementById('diaShaft').value) || 0;
             const borePulley = document.getElementById('borePulley').value;
 
-            // Perhitungan
+            // Perhitungan Pulley Teoritis
             let teoritis = 0;
             if (rpmMotor > 0) teoritis = (gearRatio * pulleyGearbox * spmTarget) / rpmMotor;
             
+            // Perhitungan Pulley Standar Terdekat
             let standar = 0;
-            if (kelipatan > 0) standar = Math.round(teoritis / kelipatan) * kelipatan;
+            let opsiTersedia = "-";
+            if (kelipatan > 0 && teoritis > 0) {
+                standar = Math.round(teoritis / kelipatan) * kelipatan;
+                
+                // Menghitung opsi ukuran pulley standar di sekitar ukuran terdekat
+                const opsi1 = (standar - kelipatan * 2).toFixed(2);
+                const opsi2 = (standar - kelipatan).toFixed(2);
+                const opsi3 = standar.toFixed(2);
+                const opsi4 = (standar + kelipatan).toFixed(2);
+                const opsi5 = (standar + kelipatan * 2).toFixed(2);
+                
+                // Saring agar ukuran negatif tidak muncul, lalu gabungkan
+                const opsiArray = [opsi1, opsi2, opsi3, opsi4, opsi5].filter(val => parseFloat(val) > 0);
+                
+                // Beri tanda kurung siku tebal pada ukuran standar yang terpilih
+                const opsiFormatted = opsiArray.map(val => val === opsi3 ? `[${val}]` : val);
+                opsiTersedia = opsiFormatted.join(' | ') + " inch";
+            }
 
+            // Perhitungan SPM Aktual
             let spmAktual = 0;
             if (gearRatio > 0 && pulleyGearbox > 0) spmAktual = (rpmMotor * standar) / (gearRatio * pulleyGearbox);
 
+            // Perhitungan Deviasi
             const selisih = spmAktual - spmTarget;
             let deviasi = 0;
             if (spmTarget > 0) deviasi = (selisih / spmTarget) * 100;
 
+            // Status Bore / Bushing
             let statusText = "BELUM DIISI";
             let statusClass = "bg-gray-200 text-gray-800";
             
@@ -167,6 +198,7 @@
             // Tampilkan ke layar
             document.getElementById('outTeoritis').innerText = teoritis.toFixed(3);
             document.getElementById('outStandar').innerText = standar.toFixed(2);
+            document.getElementById('outOpsiStandar').innerText = opsiTersedia;
             document.getElementById('outSpmAktual').innerText = spmAktual.toFixed(3);
             document.getElementById('outDeviasi').innerText = `${selisih > 0 ? '+' : ''}${selisih.toFixed(3)} (${selisih > 0 ? '+' : ''}${deviasi.toFixed(2)}%)`;
             
@@ -176,14 +208,18 @@
         }
 
         function submitRecord() {
-            // Ambil Waktu
-            const dateTimeStr = getCurrentDateTime();
+            // Ambil Input Tanggal
+            const dateInput = document.getElementById('tanggalInput').value;
+            let displayDate = "-";
+            if (dateInput) {
+                const d = new Date(dateInput);
+                displayDate = d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+            }
 
             // Ambil data identitas
             let noSrp = document.getElementById('noSrp').value.trim().toUpperCase();
             let noWell = document.getElementById('noWell').value.trim().toUpperCase();
             
-            // Jika kosong, beri nilai default
             if(noSrp === "") noSrp = "-";
             if(noWell === "") noWell = "-";
 
@@ -192,13 +228,13 @@
             const standar = document.getElementById('outStandar').innerText;
             const aktual = document.getElementById('outSpmAktual').innerText;
 
-            // Buat elemen baris tabel baru
+            // Tambah baris tabel
             const tbody = document.getElementById('recordTableBody');
             const tr = document.createElement('tr');
             tr.className = "hover:bg-gray-50 transition duration-150";
             
             tr.innerHTML = `
-                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${dateTimeStr}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${displayDate}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-medium">${noSrp}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${noWell}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${targetSpm}</td>
@@ -211,13 +247,10 @@
                 </td>
             `;
 
-            // Tambahkan baris ke dalam tabel (di urutan paling atas)
             tbody.insertBefore(tr, tbody.firstChild);
-
-            // Tampilkan area riwayat
             document.getElementById('historySection').classList.remove('hidden');
 
-            // Kosongkan input SRP dan Well setelah submit
+            // Kosongkan input SRP dan Well setelah disubmit
             document.getElementById('noSrp').value = "";
             document.getElementById('noWell').value = "";
             document.getElementById('noSrp').focus();
@@ -235,8 +268,14 @@
             }
         }
 
-        // Jalankan kalkulasi pertama kali
-        window.onload = calculate;
+        // Setel tanggal hari ini & jalankan kalkulasi saat pertama dimuat
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('tanggalInput').value = today;
+            calculate();
+        };
     </script>
 </body>
 </html>
+
+```
