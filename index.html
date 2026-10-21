@@ -37,15 +37,15 @@
                             <input type="number" id="gearRatio" value="28.45" min="0" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()" onchange="calculate()">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Pulley Gearbox (inch)</label>
-                            <input type="number" id="pulleyGearbox" value="25" min="0" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()" onchange="calculate()">
+                            <label class="block text-sm font-medium text-gray-700">Diameter Sheave (inch)</label>
+                            <input type="number" id="diaSheave" value="25" min="0" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()" onchange="calculate()">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">SPM Target</label>
+                            <label class="block text-sm font-medium text-gray-700">Permintaan SPM</label>
                             <input type="number" id="spmTarget" value="6.9" min="0" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()" onchange="calculate()">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">RPM Motor</label>
+                            <label class="block text-sm font-medium text-gray-700">RPM Elmot</label>
                             <input type="number" id="rpmMotor" value="965" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()" onchange="calculate()">
                         </div>
                         <div class="grid grid-cols-2 gap-4">
@@ -123,7 +123,7 @@
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. SRP</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Well</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target SPM</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Permintaan SPM</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-blue-50">Pulley Dipasang</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-green-50">Est. Aktual</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Selisih (Deviasi)</th>
@@ -141,7 +141,7 @@
     <script>
         function calculate() {
             const gearRatio = parseFloat(document.getElementById('gearRatio').value) || 0;
-            const pulleyGearbox = parseFloat(document.getElementById('pulleyGearbox').value) || 0;
+            const diaSheave = parseFloat(document.getElementById('diaSheave').value) || 0;
             const spmTarget = parseFloat(document.getElementById('spmTarget').value) || 0;
             const rpmMotor = parseFloat(document.getElementById('rpmMotor').value) || 0;
             const kelipatan = parseFloat(document.getElementById('kelipatanPulley').value) || 0.25;
@@ -151,9 +151,10 @@
             const inputPulleyAktual = document.getElementById('pulleyAktual').value;
             const pulleyAktual = parseFloat(inputPulleyAktual) || 0;
 
-            // 1. Perhitungan Teoritis & Standar
+            // 1. Perhitungan Teoritis & Standar 
+            // Sesuai rumus: Gear Reducer x Diameter Sheave x Permintaan SPM / RPM Elmot
             let teoritis = 0;
-            if (rpmMotor > 0) teoritis = (gearRatio * pulleyGearbox * spmTarget) / rpmMotor;
+            if (rpmMotor > 0) teoritis = (gearRatio * diaSheave * spmTarget) / rpmMotor;
             
             let standar = 0;
             if (kelipatan > 0 && teoritis > 0) {
@@ -161,10 +162,11 @@
             }
 
             // 2. SPM Aktual
+            // Sesuai pembalikan rumus: (RPM Elmot x Pulley) / (Gear Reducer x Diameter Sheave)
             const pulleyUntukDihitung = pulleyAktual > 0 ? pulleyAktual : standar;
             let spmAktual = 0;
-            if (gearRatio > 0 && pulleyGearbox > 0 && pulleyUntukDihitung > 0) {
-                spmAktual = (rpmMotor * pulleyUntukDihitung) / (gearRatio * pulleyGearbox);
+            if (gearRatio > 0 && diaSheave > 0 && pulleyUntukDihitung > 0) {
+                spmAktual = (rpmMotor * pulleyUntukDihitung) / (gearRatio * diaSheave);
             }
 
             // 3. Deviasi
@@ -215,11 +217,11 @@
             let noSrp = document.getElementById('noSrp').value.trim().toUpperCase() || "-";
             let noWell = document.getElementById('noWell').value.trim().toUpperCase() || "-";
 
-            // PERHITUNGAN ULANG KHUSUS UNTUK RECORD (Mencegah salah baca dari layar)
+            // PERHITUNGAN ULANG KHUSUS UNTUK RECORD
             const gearRatio = parseFloat(document.getElementById('gearRatio').value) || 0;
-            const pulleyGearbox = parseFloat(document.getElementById('pulleyGearbox').value) || 0;
+            const diaSheave = parseFloat(document.getElementById('diaSheave').value) || 0;
             const rpmMotor = parseFloat(document.getElementById('rpmMotor').value) || 0;
-            const targetSpm = parseFloat(document.getElementById('spmTarget').value) || 0;
+            const spmTarget = parseFloat(document.getElementById('spmTarget').value) || 0;
             const kelipatan = parseFloat(document.getElementById('kelipatanPulley').value) || 0.25;
             const inputPulleyAktual = document.getElementById('pulleyAktual').value;
 
@@ -227,19 +229,19 @@
             if (inputPulleyAktual !== "") {
                 pulleyVal = parseFloat(inputPulleyAktual);
             } else {
-                let teoritis = (rpmMotor > 0) ? (gearRatio * pulleyGearbox * targetSpm) / rpmMotor : 0;
+                let teoritis = (rpmMotor > 0) ? (gearRatio * diaSheave * spmTarget) / rpmMotor : 0;
                 pulleyVal = (kelipatan > 0 && teoritis > 0) ? Math.round(teoritis / kelipatan) * kelipatan : 0;
             }
 
             let aktualSpm = 0;
-            if (gearRatio > 0 && pulleyGearbox > 0 && pulleyVal > 0) {
-                aktualSpm = (rpmMotor * pulleyVal) / (gearRatio * pulleyGearbox);
+            if (gearRatio > 0 && diaSheave > 0 && pulleyVal > 0) {
+                aktualSpm = (rpmMotor * pulleyVal) / (gearRatio * diaSheave);
             }
 
             let deviasi = 0;
-            let selisih = aktualSpm - targetSpm;
-            if (targetSpm > 0) {
-                deviasi = (selisih / targetSpm) * 100;
+            let selisih = aktualSpm - spmTarget;
+            if (spmTarget > 0) {
+                deviasi = (selisih / spmTarget) * 100;
             }
 
             // Siapkan teks untuk tabel
@@ -256,7 +258,7 @@
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${displayDate}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-medium">${noSrp}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${noWell}</td>
-                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${targetSpm}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${spmTarget}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-blue-700 font-bold bg-blue-50">${pulleyText}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-green-800 font-bold bg-green-50">${aktualText}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">${deviasiText}</td>
