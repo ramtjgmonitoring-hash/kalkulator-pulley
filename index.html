@@ -1,3 +1,16 @@
+Benar, Anda menunjukkan inputan **Pulley Standar (0.25)**, **Dia. Shaft (2.125)**, dan **Bore Pulley Baru**. Inputan tersebut memang berasal dari file Excel asli Anda yang fungsinya hanya untuk memverifikasi kecocokan lubang as motor (Bore/Bushing) dan menentukan kelipatan ukuran pulley di pasaran.
+
+Karena fokus utama aplikasi ini adalah menghitung SPM aktual, inputan tersebut membuat tampilan antarmuka menjadi terlalu penuh dan **sangat bisa dihilangkan**.
+
+Saya telah membersihkan kodenya dengan perubahan berikut:
+
+1. Menghapus ketiga input tersebut dari layar.
+2. Menyembunyikan nilai kelipatan pulley (0.25) langsung ke dalam sistem (*hardcode*), sehingga "Rekomendasi Pulley Standar" tetap berfungsi tanpa perlu input manual.
+3. Menghapus baris "Status Bore/Bushing" di kotak hasil agar tampilan lebih ringkas dan fokus pada target SPM.
+
+Silakan perbarui kode di GitHub Anda dengan versi yang lebih bersih ini:
+
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -48,20 +61,6 @@
                             <label class="block text-sm font-medium text-gray-700">RPM Elmot</label>
                             <input type="number" id="rpmMotor" value="965" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()" onchange="calculate()">
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Pulley Standar (inch)</label>
-                                <input type="number" id="kelipatanPulley" value="0.25" min="0" step="0.05" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()" onchange="calculate()">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Dia. Shaft (inch)</label>
-                                <input type="number" id="diaShaft" value="2.125" min="0" step="0.125" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()" onchange="calculate()">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Bore Pulley Baru (inch) <span class="text-xs text-gray-500 italic">- Opsional</span></label>
-                            <input type="number" id="borePulley" value="2.125" min="0" step="0.125" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500" oninput="calculate()" onchange="calculate()">
-                        </div>
                     </div>
                 </div>
 
@@ -98,10 +97,6 @@
                             <div class="flex justify-between items-center border-b border-green-200 pb-2 mb-4">
                                 <span class="text-gray-700">Selisih & Deviasi SPM:</span>
                                 <span id="outDeviasi" class="font-bold text-lg text-gray-900">0.000 (0.00%)</span>
-                            </div>
-                            <div class="flex justify-between items-center border-b border-green-200 pb-2">
-                                <span class="text-gray-700">Status Bore/Bushing:</span>
-                                <span id="outStatus" class="font-bold text-sm md:text-base px-3 py-1 rounded">SESUAI</span>
                             </div>
                         </div>
                     </div>
@@ -144,15 +139,14 @@
             const diaSheave = parseFloat(document.getElementById('diaSheave').value) || 0;
             const spmTarget = parseFloat(document.getElementById('spmTarget').value) || 0;
             const rpmMotor = parseFloat(document.getElementById('rpmMotor').value) || 0;
-            const kelipatan = parseFloat(document.getElementById('kelipatanPulley').value) || 0.25;
-            const diaShaft = parseFloat(document.getElementById('diaShaft').value) || 0;
-            const borePulley = document.getElementById('borePulley').value;
+            
+            // Kelipatan disembunyikan di dalam kode (0.25)
+            const kelipatan = 0.25; 
             
             const inputPulleyAktual = document.getElementById('pulleyAktual').value;
             const pulleyAktual = parseFloat(inputPulleyAktual) || 0;
 
             // 1. Perhitungan Teoritis & Standar 
-            // Sesuai rumus: Gear Reducer x Diameter Sheave x Permintaan SPM / RPM Elmot
             let teoritis = 0;
             if (rpmMotor > 0) teoritis = (gearRatio * diaSheave * spmTarget) / rpmMotor;
             
@@ -162,7 +156,6 @@
             }
 
             // 2. SPM Aktual
-            // Sesuai pembalikan rumus: (RPM Elmot x Pulley) / (Gear Reducer x Diameter Sheave)
             const pulleyUntukDihitung = pulleyAktual > 0 ? pulleyAktual : standar;
             let spmAktual = 0;
             if (gearRatio > 0 && diaSheave > 0 && pulleyUntukDihitung > 0) {
@@ -174,21 +167,7 @@
             let deviasi = 0;
             if (spmTarget > 0) deviasi = (selisih / spmTarget) * 100;
 
-            // 4. Status Bore
-            let statusText = "BELUM DIISI";
-            let statusClass = "bg-gray-200 text-gray-800";
-            if (borePulley !== "") {
-                const boreVal = parseFloat(borePulley);
-                if (boreVal.toFixed(3) === diaShaft.toFixed(3)) {
-                    statusText = "SESUAI";
-                    statusClass = "bg-green-500 text-white";
-                } else {
-                    statusText = "PERIKSA BORE";
-                    statusClass = "bg-red-500 text-white";
-                }
-            }
-
-            // 5. Render ke Layar
+            // 4. Render ke Layar
             document.getElementById('outTeoritis').innerText = teoritis.toFixed(3);
             document.getElementById('outStandar').innerText = standar.toFixed(2) + " inch";
             
@@ -199,10 +178,6 @@
                 document.getElementById('outSpmAktual').innerText = "0.000";
                 document.getElementById('outDeviasi').innerText = "0.000 (0.00%)";
             }
-            
-            const statusEl = document.getElementById('outStatus');
-            statusEl.innerText = statusText;
-            statusEl.className = `font-bold text-sm md:text-base px-3 py-1 rounded tracking-wide shadow-sm ${statusClass}`;
         }
 
         function submitRecord() {
@@ -222,7 +197,8 @@
             const diaSheave = parseFloat(document.getElementById('diaSheave').value) || 0;
             const rpmMotor = parseFloat(document.getElementById('rpmMotor').value) || 0;
             const spmTarget = parseFloat(document.getElementById('spmTarget').value) || 0;
-            const kelipatan = parseFloat(document.getElementById('kelipatanPulley').value) || 0.25;
+            
+            const kelipatan = 0.25; 
             const inputPulleyAktual = document.getElementById('pulleyAktual').value;
 
             let pulleyVal = 0;
@@ -301,3 +277,5 @@
     </script>
 </body>
 </html>
+
+```
