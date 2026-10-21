@@ -1,16 +1,3 @@
-Benar, Anda menunjukkan inputan **Pulley Standar (0.25)**, **Dia. Shaft (2.125)**, dan **Bore Pulley Baru**. Inputan tersebut memang berasal dari file Excel asli Anda yang fungsinya hanya untuk memverifikasi kecocokan lubang as motor (Bore/Bushing) dan menentukan kelipatan ukuran pulley di pasaran.
-
-Karena fokus utama aplikasi ini adalah menghitung SPM aktual, inputan tersebut membuat tampilan antarmuka menjadi terlalu penuh dan **sangat bisa dihilangkan**.
-
-Saya telah membersihkan kodenya dengan perubahan berikut:
-
-1. Menghapus ketiga input tersebut dari layar.
-2. Menyembunyikan nilai kelipatan pulley (0.25) langsung ke dalam sistem (*hardcode*), sehingga "Rekomendasi Pulley Standar" tetap berfungsi tanpa perlu input manual.
-3. Menghapus baris "Status Bore/Bushing" di kotak hasil agar tampilan lebih ringkas dan fokus pada target SPM.
-
-Silakan perbarui kode di GitHub Anda dengan versi yang lebih bersih ini:
-
-```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -277,5 +264,3 @@ Silakan perbarui kode di GitHub Anda dengan versi yang lebih bersih ini:
     </script>
 </body>
 </html>
-
-```
